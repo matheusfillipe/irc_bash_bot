@@ -20,12 +20,12 @@ mainloop () {
       CMD=${TEXT%% *}
       CMD=${CMD/"${PREF}"}
       TEXT=${TEXT/"${PREF}${CMD} "}
-      TEXT=$(printf '%q' "$TEXT" | sed 's/\\ / /g')
+      read -ra args <<< "$TEXT"
       OUT=""
       FILE=""
       [[ -f "./commands/$CMD" ]] && FILE="./commands/$CMD" 
       [[ -f "./commands/$CMD.sh" ]] && FILE="./commands/$CMD.sh" 
-      [ -n "$FILE" ] && OUT=$(bash "$FILE" $TEXT)
+      [ -n "$FILE" ] && OUT=$(bash "$FILE" ${args[@]})
       # TODO fork here and multiline
       [ -n "$OUT" ] && while read -r line; do echo "PRIVMSG ${CHAN} :${line}"; done < <(echo "$OUT")
 			;;
