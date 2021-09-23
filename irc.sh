@@ -26,7 +26,8 @@ mainloop () {
       [[ -f "./commands/$CMD" ]] && FILE="./commands/$CMD" 
       [[ -f "./commands/$CMD.sh" ]] && FILE="./commands/$CMD.sh" 
       [ -n "$FILE" ] && OUT=$(bash "$FILE" $TEXT)
-      [ -n "$OUT" ] && echo "PRIVMSG ${CHAN} :${OUT}"
+      # TODO fork here and multiline
+      [ -n "$OUT" ] && while read -r line; do echo "PRIVMSG ${CHAN} :${line}"; done < <(echo "$OUT")
 			;;
 		*" PRIVMSG ${NAME} :"*)
 			echo "PRIVMSG ${WHO} :I am in: '${CHAN}', as of $(date)"
