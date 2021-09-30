@@ -11,5 +11,5 @@ PREF="="
 HOST="irc.dot.org.es"
 PORT=6667
 NAME="_bash_bot"
-CHAN="#romanian"
+CHAN="#bots"
 PING=10.0
