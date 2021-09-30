@@ -8,6 +8,7 @@ mainloop () {
   while sleep ${PING}; do echo PING :${RANDOM}; done &
   echo "JOIN ${CHAN}"
   echo "PRIVMSG ${CHAN} :Hi, I am a bash bot!"
+  O_CHAN=$CHAN
 
 	while read line; do
 		UNIX=$(echo "${line}" | tr -d '\r')
@@ -26,11 +27,34 @@ mainloop () {
       [[ -f "./commands/$CMD" ]] && FILE="./commands/$CMD" 
       [[ -f "./commands/$CMD.sh" ]] && FILE="./commands/$CMD.sh" 
       [ -n "$FILE" ] && OUT=$(echo "$CHAN $WHO" | bash "$FILE" ${args[@]})
-      # TODO fork here and multiline
-      [ -n "$OUT" ] && while read -r line; do echo "PRIVMSG ${CHAN} :${line}"; done < <(echo "$OUT")
+
+      if [ -n "$OUT" ]
+      then
+        while read -r line
+        do
+          if [[ $line == /* ]]
+          then
+            args="$(echo ${line} | cut -d' ' -f 2-)"
+            case "${line^^}" in
+              "/JOIN "*)
+                echo "JOIN $args"; 
+              ;;
+              "/MSG "*)
+                echo "PRIVMSG $(echo $args | cut -d\  -f1) :$(echo $args | cut -d\  -f 2-)";
+              ;;
+              "/NICK "*)
+                echo "NICK $args";
+              ;;
+            esac
+          else
+            echo "PRIVMSG ${CHAN} :${line}"; 
+          fi
+        done < <(echo "$OUT")
+      fi
 			;;
+
 		*" PRIVMSG ${NAME} :"*)
-			echo "PRIVMSG ${WHO} :I am in: '${CHAN}', as of $(date)"
+			echo "PRIVMSG ${WHO} :I am in: '${O_CHAN}', as of $(date)"
 			;;
 		*" INVITE ${NAME}"*)
       [[ "$WHO" == "$ADMIN" ]] && echo "JOIN ${UNIX##* }"
