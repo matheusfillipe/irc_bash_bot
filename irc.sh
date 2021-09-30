@@ -45,6 +45,9 @@ mainloop () {
               "/NICK "*)
                 echo "NICK $args";
               ;;
+              "/MODE "*)
+                echo "MODE $args";
+              ;;
               *)
                 echo "PRIVMSG ${CHAN} :${line}"; 
               ;;
