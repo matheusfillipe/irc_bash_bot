@@ -45,6 +45,9 @@ mainloop () {
               "/NICK "*)
                 echo "NICK $args";
               ;;
+              *)
+                echo "PRIVMSG ${CHAN} :${line}"; 
+              ;;
             esac
           else
             echo "PRIVMSG ${CHAN} :${line}"; 
