@@ -25,7 +25,7 @@ mainloop () {
       FILE=""
       [[ -f "./commands/$CMD" ]] && FILE="./commands/$CMD" 
       [[ -f "./commands/$CMD.sh" ]] && FILE="./commands/$CMD.sh" 
-      [ -n "$FILE" ] && OUT=$(bash "$FILE" ${args[@]})
+      [ -n "$FILE" ] && OUT=$(echo "$CHAN $WHO" | bash "$FILE" ${args[@]})
       # TODO fork here and multiline
       [ -n "$OUT" ] && while read -r line; do echo "PRIVMSG ${CHAN} :${line}"; done < <(echo "$OUT")
 			;;
@@ -33,7 +33,7 @@ mainloop () {
 			echo "PRIVMSG ${WHO} :I am in: '${CHAN}', as of $(date)"
 			;;
 		*" INVITE ${NAME}"*)
-			echo "JOIN ${TEXT}"
+      [[ "$WHO" == "$ADMIN" ]] && echo "JOIN ${UNIX##* }"
 			;;
 		*" KICK "*" ${NAME} "*)
 			echo "JOIN ${CHAN}"
