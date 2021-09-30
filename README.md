@@ -39,7 +39,7 @@ nick=$(echo "$info" | cut -d\  -f2)
 
 ## Use other common irc commands
 
-If your command script has a line starting with "/" on its stdout it will be read as an irc command like on most irc clients. The currently supported commands are `/nick` `/msg` (for private or channel messages, like sending to another channel) and `/join`. These commands are case insensitive.
+If your command script has a line starting with "/" on its stdout it will be read as an irc command like on most irc clients. Only a few commands are currently implemented like `/nick` `/msg` (for private or channel messages, like sending to another channel), `/join`, `/mode` etc.... These commands are case insensitive.
 
 Example:
 ```shell

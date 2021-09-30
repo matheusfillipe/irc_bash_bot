@@ -1,6 +1,64 @@
 #!/usr/bin/env bash
 source ./config.sh
 
+process_cmd () {
+  CMD=$1
+  args=$2
+  CHAN=$3
+  WHO=$4
+  OUT=""
+  FILE=""
+  [[ -f "./commands/$CMD" ]] && FILE="./commands/$CMD" 
+  [[ -f "./commands/$CMD.sh" ]] && FILE="./commands/$CMD.sh" 
+  [ -n "$FILE" ] && OUT=$(echo "$CHAN $WHO" | bash "$FILE" ${args[@]})
+
+  if [ -n "$OUT" ]
+  then
+    while read -r line
+    do
+      if [[ $line == /* ]]
+      then
+        args="$(echo ${line} | cut -d' ' -f 2-)"
+        case "${line^^}" in
+          "/JOIN "*)
+            echo "JOIN $args"; 
+          ;;
+          "/MSG "*)
+            echo "PRIVMSG $(echo $args | cut -d\  -f1) :$(echo $args | cut -d\  -f 2-)";
+          ;;
+          "/NICK "*)
+            echo "NICK $args";
+            NAME=$args
+          ;;
+          "/MODE "*)
+            echo "MODE $args";
+          ;;
+          "/LIST "*)
+            echo "LIST";
+          ;;
+          "/PART "*)
+            echo "PART $args";
+          ;;
+          "/NAMES "*)
+            echo "NAMES $args";
+          ;;
+          "/INVITE "*)
+            echo "INVITE $args";
+          ;;
+          "/BAN "*)
+            echo "KICK $args";
+          ;;
+          *)
+            echo "PRIVMSG ${CHAN} :${line}"; 
+          ;;
+        esac
+      else
+        echo "PRIVMSG ${CHAN} :${line}"; 
+      fi
+    done < <(echo "$OUT")
+  fi
+}
+
 mainloop () {
   echo "NICK ${NAME}"
   echo "USER ${NAME} * * : ${NAME}"
@@ -22,45 +80,15 @@ mainloop () {
       CMD=${CMD/"${PREF}"}
       TEXT=${TEXT/"${PREF}${CMD} "}
       read -ra args <<< "$TEXT"
-      OUT=""
-      FILE=""
-      [[ -f "./commands/$CMD" ]] && FILE="./commands/$CMD" 
-      [[ -f "./commands/$CMD.sh" ]] && FILE="./commands/$CMD.sh" 
-      [ -n "$FILE" ] && OUT=$(echo "$CHAN $WHO" | bash "$FILE" ${args[@]})
-
-      if [ -n "$OUT" ]
-      then
-        while read -r line
-        do
-          if [[ $line == /* ]]
-          then
-            args="$(echo ${line} | cut -d' ' -f 2-)"
-            case "${line^^}" in
-              "/JOIN "*)
-                echo "JOIN $args"; 
-              ;;
-              "/MSG "*)
-                echo "PRIVMSG $(echo $args | cut -d\  -f1) :$(echo $args | cut -d\  -f 2-)";
-              ;;
-              "/NICK "*)
-                echo "NICK $args";
-              ;;
-              "/MODE "*)
-                echo "MODE $args";
-              ;;
-              *)
-                echo "PRIVMSG ${CHAN} :${line}"; 
-              ;;
-            esac
-          else
-            echo "PRIVMSG ${CHAN} :${line}"; 
-          fi
-        done < <(echo "$OUT")
-      fi
+      process_cmd "$CMD" "$args" "$CHAN" "$WHO" &
 			;;
 
-		*" PRIVMSG ${NAME} :"*)
-			echo "PRIVMSG ${WHO} :I am in: '${O_CHAN}', as of $(date)"
+		*" PRIVMSG ${NAME} :${PREF}"*)
+      CMD=${TEXT%% *}
+      CMD=${CMD/"${PREF}"}
+      TEXT=${TEXT/"${PREF}${CMD} "}
+      read -ra args <<< "$TEXT"
+      process_cmd "$CMD" "$args" "$CHAN" "$WHO" &
 			;;
 		*" INVITE ${NAME}"*)
       [[ "$WHO" == "$ADMIN" ]] && echo "JOIN ${UNIX##* }"
