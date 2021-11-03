@@ -59,13 +59,17 @@ process_cmd () {
   fi
 }
 
+delayed_join () {
+  sleep ${PING}
+  echo "JOIN ${CHAN}"
+  echo "PRIVMSG ${CHAN} :Hi, I am a bash bot!"
+}
 mainloop () {
   echo "NICK ${NAME}"
   echo "USER ${NAME} * * : ${NAME}"
   sleep 3
   while sleep ${PING}; do echo PING :${RANDOM}; done &
-  echo "JOIN ${CHAN}"
-  echo "PRIVMSG ${CHAN} :Hi, I am a bash bot!"
+  delayed_join &
   O_CHAN=$CHAN
 
 	while read line; do
@@ -98,6 +102,10 @@ mainloop () {
 			echo "PRIVMSG ${CHAN} :Hey ${WHO} ! What does '${TEXT}' mean?!"
 			echo "PART ${CHAN} :BOT RAGE QUIT"
 			;;
+		"PING :"*)
+		  COOKIE=$(echo "${UNIX}" | cut -d':' -f2 )
+      echo "PONG :${COOKIE}"
+      ;;
 		*)
 			test -n "${LOGTO}" && echo "PRIVMSG ${LOGTO} : ${UNIX}"
 			;;
